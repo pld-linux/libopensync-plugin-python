@@ -5,7 +5,7 @@ Version:	0.18
 Release:	0.1
 License:	LGPL
 Group:		Libraries
-Source0:	http://www.opensync.org/attachment/wiki/download/%{name}2-%{version}.tar.gz?format=raw
+Source0:	http://www.opensync.org/attachment/wiki/download/%{name}-%{version}.tar.gz?format=raw
 # Source0-md5:	8030db5af7c9f8ca82a5dbd8657979fb
 URL:		http://www.opensync.org/
 BuildRequires:	libopensync-devel

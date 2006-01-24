@@ -1,5 +1,5 @@
-
 Summary:	OpenSync Python plugin
+Summary(pl):	Wtyczka Pythona do OpenSync
 Name:		libopensync-plugin-python
 Version:	0.18
 Release:	0.1
@@ -19,6 +19,15 @@ It consists of several plugins that can be used to connect to devices,
 a powerful sync-engine and the framework itself.
 
 This package contains Python plugin for OpenSync framework.
+
+%description -l pl
+OpenSync to niezale¿ny od platformy i dystrybucji szkielet do
+synchronizacji danych.
+
+Sk³ada siê z ró¿nych wtyczek, których mo¿na u¿ywaæ do ³±czenia z
+urz±dzeniami, potê¿nego silnika synchronizacji oraz samego szkieletu.
+
+Ten pakiet zawiera wtyczkê Pythona dla szkieletu OpenSync.
 
 %prep
 %setup -q

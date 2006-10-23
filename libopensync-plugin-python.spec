@@ -12,8 +12,8 @@ BuildRequires:	libopensync-devel >= %{version}
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
-OpenSync is a synchronization framework that is platform and distribution
-independent.
+OpenSync is a synchronization framework that is platform and
+distribution independent.
 
 It consists of several plugins that can be used to connect to devices,
 a powerful sync-engine and the framework itself.

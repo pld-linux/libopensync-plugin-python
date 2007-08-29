@@ -1,12 +1,12 @@
 Summary:	OpenSync Python plugin
 Summary(pl.UTF-8):	Wtyczka Pythona do OpenSync
 Name:		libopensync-plugin-python
-Version:	0.18
+Version:	0.22
 Release:	0.1
 License:	LGPL
 Group:		Libraries
-Source0:	http://www.opensync.org/attachment/wiki/download/%{name}-%{version}.tar.gz?format=raw
-# Source0-md5:	8030db5af7c9f8ca82a5dbd8657979fb
+Source0:	http://www.opensync.org/attachment/wiki/download/%{name}-%{version}.tar.bz2?format=raw
+# Source0-md5:	ad5aba28ee66adc1c62e17cdd27c7dc7
 URL:		http://www.opensync.org/
 BuildRequires:	libopensync-devel >= %{version}
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
@@ -41,6 +41,8 @@ rm -rf $RPM_BUILD_ROOT
 
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
+
+rm -f $RPM_BUILD_ROOT%{_libdir}/opensync/python-plugins/sample.py
 
 %clean
 rm -rf $RPM_BUILD_ROOT

@@ -1,13 +1,14 @@
 Summary:	OpenSync Python plugin
 Summary(pl.UTF-8):	Wtyczka Pythona do OpenSync
 Name:		libopensync-plugin-python
-Version:	0.22
+Version:	0.36
 Release:	1
 License:	LGPL v2.1+
 Group:		Libraries
-Source0:	http://www.opensync.org/attachment/wiki/download/%{name}-%{version}.tar.bz2?format=raw
-# Source0-md5:	ad5aba28ee66adc1c62e17cdd27c7dc7
+Source0: http://opensync.org/download/releases/0.36/libopensync-plugin-python-0.36.tar.bz2
+# Source0-md5:	6247a7e96de3fa55c1fb58b2f364fb5e
 URL:		http://www.opensync.org/
+BuildRequires:	cmake
 BuildRequires:	glib2-devel >= 2.0
 BuildRequires:	libopensync-devel >= %{version}
 BuildRequires:	pkgconfig
@@ -36,23 +37,30 @@ Ten pakiet zawiera wtyczkę Pythona dla szkieletu OpenSync.
 %setup -q
 
 %build
-%configure
+mkdir build
+cd build
+%cmake \
+	-DCMAKE_INSTALL_PREFIX=%{_prefix} \
+%if "%{_lib}" != "lib"
+	-DLIB_SUFFIX=64 \
+%endif
+	..
 %{__make}
 
 %install
 rm -rf $RPM_BUILD_ROOT
-
+cd build
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
 
-rm -f $RPM_BUILD_ROOT%{_libdir}/opensync/plugins/*.la
-rm -f $RPM_BUILD_ROOT%{_libdir}/opensync/python-plugins/sample.py
+rm -f $RPM_BUILD_ROOT%{_libdir}/opensync-1.0/plugins/*.la
+rm -f $RPM_BUILD_ROOT%{_libdir}/opensync-1.0/python-plugins/sample.py
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%doc AUTHORS ChangeLog NEWS README src/sample.py
-%attr(755,root,root) %{_libdir}/opensync/plugins/python_module.so
-%dir %{_libdir}/opensync/python-plugins
+%doc AUTHORS src/sample.py
+%attr(755,root,root) %{_libdir}/opensync-1.0/plugins/python-module.so
+%dir %{_libdir}/opensync-1.0/python-plugins

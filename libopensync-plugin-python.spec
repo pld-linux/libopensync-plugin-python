@@ -10,7 +10,7 @@ Source0:	http://www.opensync.org/download/releases/0.36/%{name}-%{version}.tar.g
 URL:		http://www.opensync.org/
 BuildRequires:	cmake
 BuildRequires:	glib2-devel >= 2.0
-BuildRequires:	libopensync-devel >= %{version}
+BuildRequires:	libopensync-devel >= 1:%{version}
 BuildRequires:	pkgconfig
 BuildRequires:	python-devel
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)

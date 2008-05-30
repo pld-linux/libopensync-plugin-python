@@ -5,8 +5,8 @@ Version:	0.36
 Release:	1
 License:	LGPL v2.1+
 Group:		Libraries
-Source0: http://opensync.org/download/releases/0.36/libopensync-plugin-python-0.36.tar.bz2
-# Source0-md5:	6247a7e96de3fa55c1fb58b2f364fb5e
+Source0:	http://www.opensync.org/download/releases/0.36/%{name}-%{version}.tar.gz
+# Source0-md5:	b8a2d4632c88af3633453c668d2a7b11
 URL:		http://www.opensync.org/
 BuildRequires:	cmake
 BuildRequires:	glib2-devel >= 2.0
@@ -44,13 +44,13 @@ cd build
 %if "%{_lib}" != "lib"
 	-DLIB_SUFFIX=64 \
 %endif
-	..
+	../
+
 %{__make}
 
 %install
 rm -rf $RPM_BUILD_ROOT
-cd build
-%{__make} install \
+%{__make} -C build install \
 	DESTDIR=$RPM_BUILD_ROOT
 
 rm -f $RPM_BUILD_ROOT%{_libdir}/opensync-1.0/plugins/*.la

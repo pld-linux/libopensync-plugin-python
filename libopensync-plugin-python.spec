@@ -1,3 +1,6 @@
+# TODO:
+# - move %{_libdir}/opensync-1.0/python-plugins to %{_datadir} and make
+#   dependant packages noarch
 Summary:	OpenSync Python plugin
 Summary(pl.UTF-8):	Wtyczka Pythona do OpenSync
 Name:		libopensync-plugin-python
@@ -7,12 +10,14 @@ License:	LGPL v2.1+
 Group:		Libraries
 Source0:	http://www.opensync.org/download/releases/0.36/%{name}-%{version}.tar.gz
 # Source0-md5:	b8a2d4632c88af3633453c668d2a7b11
+Patch0:		cmake.patch
 URL:		http://www.opensync.org/
 BuildRequires:	cmake
 BuildRequires:	glib2-devel >= 2.0
 BuildRequires:	libopensync-devel >= 1:%{version}
 BuildRequires:	pkgconfig
 BuildRequires:	python-devel
+BuildRequires:	sed >= 4.0
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
@@ -35,16 +40,19 @@ Ten pakiet zawiera wtyczkę Pythona dla szkieletu OpenSync.
 
 %prep
 %setup -q
+%patch0 -p1
+
+rm cmake/modules/FindPythonLibs.cmake
 
 %build
-mkdir build
+install -d build
 cd build
 %cmake \
 	-DCMAKE_INSTALL_PREFIX=%{_prefix} \
 %if "%{_lib}" != "lib"
 	-DLIB_SUFFIX=64 \
 %endif
-	../
+	..
 
 %{__make}
 

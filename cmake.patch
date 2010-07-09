@@ -1,0 +1,60 @@
+--- libopensync-plugin-python-0.36/cmake/modules/FindPythonLibs.cmake~	2008-01-26 19:03:13.000000000 +0200
++++ libopensync-plugin-python-0.36/cmake/modules/FindPythonLibs.cmake	2010-07-09 10:21:52.994113737 +0300
+@@ -77,7 +77,7 @@
+ SET(PYTHON_FRAMEWORK_INCLUDES)
+ IF(Python_FRAMEWORKS)
+   IF(NOT PYTHON_INCLUDE_PATH)
+-    FOREACH(version 2.5 2.4 2.3 2.2 2.1 2.0 1.6 1.5)
++    FOREACH(version 2.7 2.6 2.5 2.4 2.3 2.2 2.1 2.0 1.6 1.5)
+       FOREACH(dir ${Python_FRAMEWORKS})
+         SET(PYTHON_FRAMEWORK_INCLUDES ${PYTHON_FRAMEWORK_INCLUDES}
+           ${dir}/Versions/${version}/include/python${version})
+--- libopensync-plugin-python-0.36/cmake/modules/FindOpenSync.cmake~	2010-07-09 10:18:41.424127928 +0300
++++ libopensync-plugin-python-0.36/cmake/modules/FindOpenSync.cmake	2010-07-09 10:18:53.777886430 +0300
+@@ -13,7 +13,7 @@
+ #  For details see the accompanying COPYING-CMAKE-SCRIPTS file.
+ #
+ 
+-# Take care about opensync-1.0.pc settings
++# Take care about libopensync.pc settings
+ INCLUDE( FindPkgConfig )
+ 
+ IF ( OpenSync_FIND_REQUIRED )
+@@ -23,15 +23,15 @@
+ ENDIF ( OpenSync_FIND_REQUIRED )
+ 
+ IF ( OPENSYNC_MIN_VERSION )
+-	PKG_SEARCH_MODULE( OPENSYNC ${_pkgconfig_REQUIRED} opensync-1.0>=${OPENSYNC_MIN_VERSION} )
++	PKG_SEARCH_MODULE( OPENSYNC ${_pkgconfig_REQUIRED} libopensync>=${OPENSYNC_MIN_VERSION} )
+ ELSE ( OPENSYNC_MIN_VERSION )
+-	PKG_SEARCH_MODULE( OPENSYNC ${_pkgconfig_REQUIRED} opensync-1.0 )
++	PKG_SEARCH_MODULE( OPENSYNC ${_pkgconfig_REQUIRED} libopensync )
+ ENDIF ( OPENSYNC_MIN_VERSION )
+ 
+ FIND_PROGRAM( PKGCONFIG_EXECUTABLE NAMES pkg-config )
+ 
+ IF ( PKGCONFIG_EXECUTABLE )
+-	EXEC_PROGRAM( ${PKGCONFIG_EXECUTABLE} ARGS opensync-1.0 --variable=datadir OUTPUT_VARIABLE _opensync_data_DIR )
++	EXEC_PROGRAM( ${PKGCONFIG_EXECUTABLE} ARGS libopensync --variable=datadir OUTPUT_VARIABLE _opensync_data_DIR )
+ 	STRING( REGEX REPLACE "[\r\n]" " " _opensync_data_DIR "${_opensync_data_DIR}"  )
+ ENDIF ( PKGCONFIG_EXECUTABLE )
+ 
+@@ -47,7 +47,7 @@
+ # Look for OpenSync include dir and libraries without pkg-config 
+ IF( NOT OPENSYNC_FOUND AND NOT PKG_CONFIG_FOUND )
+ 	# Fallback if pkg-config doesn't exist
+-	FIND_PATH( OPENSYNC_INCLUDE_DIRS opensync/opensync.h PATH_SUFFIXES opensync-1.0
++	FIND_PATH( OPENSYNC_INCLUDE_DIRS opensync/opensync.h PATH_SUFFIXES libopensync
+ 			PATHS
+ 			/opt/local/include/
+ 			/sw/include/
+--- libopensync-plugin-python-0.36/CMakeLists.txt~	2008-01-26 19:03:13.000000000 +0200
++++ libopensync-plugin-python-0.36/CMakeLists.txt	2010-07-09 10:22:46.057626700 +0300
+@@ -1,5 +1,7 @@
+ PROJECT( libopensync-plugin-python C )
+ 
++cmake_minimum_required(VERSION 2.8)
++
+ SET( VERSION "0.36" )
+ 
+ SET( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules" )

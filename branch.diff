@@ -1,0 +1,241 @@
+diff -ur -x .svn -x .git -x .bzr -x CVS -w -x '*.cmake' -x '*.txt' ../BUILD.i686-linux/libopensync-plugin-python-0.36//src/python_module.c python-module//src/python_module.c
+--- ../BUILD.i686-linux/libopensync-plugin-python-0.36//src/python_module.c	2008-01-26 19:03:13.000000000 +0200
++++ python-module//src/python_module.c	2010-12-22 11:53:33.671997210 +0200
+@@ -25,7 +25,6 @@
+ #include <Python.h>
+ #include <opensync/opensync.h>
+ #include <opensync/opensync-plugin.h>
+-#include <opensync/opensync-context.h>
+ #include <signal.h>
+ #include <glib.h>
+ 
+@@ -160,7 +159,7 @@
+  * - function(info, context)
+  * - function(info, context, change)
+  */
+-static osync_bool pm_call_module_method(MemberData *data, char *name, OSyncPluginInfo *info, OSyncContext *ctx, OSyncChange *chg)
++static osync_bool pm_call_module_method(OSyncObjTypeSink *sink, OSyncPluginInfo *info, OSyncContext *ctx, void *userdata, char *name, OSyncChange *chg)
+ {
+ 	osync_trace(TRACE_ENTRY, "%s(%s, %p, %p, %p)", __func__, name, info, ctx, chg);
+ 	PyObject *ret = NULL;
+@@ -169,21 +168,24 @@
+ 
+ 	PyGILState_STATE pystate = PyGILState_Ensure();
+ 
+-	PyObject *pyinfo = pm_make_info(data->osync_module, info, &error);
++	PyObject *osync_module = NULL;
++	if (!(osync_module = pm_load_opensync(&error)))
++		goto error;
++
++	PyObject *pyinfo = pm_make_info(osync_module, info, &error);
+ 	if (!pyinfo)
+ 		goto error;
+ 
+-	PyObject *pycontext = pm_make_context(data->osync_module, ctx, &error);
++	PyObject *pycontext = pm_make_context(osync_module, ctx, &error);
+ 	if (!pycontext) {
+ 		Py_DECREF(pyinfo);
+ 		goto error;
+ 	}
+ 
+-	OSyncObjTypeSink *sink = osync_plugin_info_get_sink(info);
+-	PyObject *sink_pyobject = osync_objtype_sink_get_userdata(sink);
++	PyObject *sink_pyobject = userdata;
+ 
+ 	if (chg) {
+-		PyObject *pychange = pm_make_change(data->osync_module, chg, &error);
++		PyObject *pychange = pm_make_change(osync_module, chg, &error);
+ 		if (!pychange) {
+ 			Py_DECREF(pyinfo);
+ 			Py_DECREF(pycontext);
+@@ -202,6 +204,7 @@
+ 	if (ret) {
+ 		Py_DECREF(pycontext);
+ 		Py_DECREF(ret);
++		Py_XDECREF(osync_module);
+ 		PyGILState_Release(pystate);
+ 		osync_context_report_success(ctx);
+ 		osync_trace(TRACE_EXIT, "%s", __func__);
+@@ -213,7 +216,7 @@
+ 	PyErr_Fetch(&pytype, &pyvalue, &pytraceback);
+ 	
+ 	PyObject *osyncerror = NULL;
+-	osyncerror = PyObject_GetAttrString(data->osync_module, "Error");
++	osyncerror = PyObject_GetAttrString(osync_module, "Error");
+ 	if (!osyncerror) {
+ 		PYERR_CLEAR();
+ 		osync_error_set(&error, OSYNC_ERROR_GENERIC, "Failed to get OSyncError class object");
+@@ -257,6 +260,7 @@
+ 	Py_XDECREF(osyncerror);
+ 
+ error:
++	Py_XDECREF(osync_module);
+ 	PyGILState_Release(pystate);
+ 	if (report_error)
+ 		osync_context_report_osyncerror(ctx, error);
+@@ -264,57 +268,46 @@
+ 	return FALSE;
+ }
+ 
+-static void pm_connect(void *data, OSyncPluginInfo *info, OSyncContext *ctx)
++static void pm_connect(OSyncObjTypeSink *sink, OSyncPluginInfo *info, OSyncContext *ctx, void *userdata)
+ {
+-	pm_call_module_method(data, "connect", info, ctx, NULL);
++	pm_call_module_method(sink, info, ctx, userdata, "connect", NULL);
+ }
+ 
+-static void pm_disconnect(void *data, OSyncPluginInfo *info, OSyncContext *ctx)
++static void pm_disconnect(OSyncObjTypeSink *sink, OSyncPluginInfo *info, OSyncContext *ctx, void *userdata)
+ {
+-	pm_call_module_method(data, "disconnect", info, ctx, NULL);
++	pm_call_module_method(sink, info, ctx, userdata, "disconnect", NULL);
+ }
+ 
+-static void pm_get_changes(void *data, OSyncPluginInfo *info, OSyncContext *ctx)
++static void pm_get_changes(OSyncObjTypeSink *sink, OSyncPluginInfo *info, OSyncContext *ctx, osync_bool slow_sync, void *userdata)
+ {
+-	pm_call_module_method(data, "get_changes", info, ctx, NULL);
++	pm_call_module_method(sink, info, ctx, userdata, "get_changes", NULL);
+ }
+ 
+-static void pm_commit(void *data, OSyncPluginInfo *info, OSyncContext *ctx, OSyncChange *change)
++static void pm_commit(OSyncObjTypeSink *sink, OSyncPluginInfo *info, OSyncContext *ctx, OSyncChange *change, void *userdata)
+ {	
+-	pm_call_module_method(data, "commit", info, ctx, change);
++	pm_call_module_method(sink, info, ctx, userdata, "commit", change);
+ }
+ 
+-static void pm_committed_all(void *data, OSyncPluginInfo *info, OSyncContext *ctx)
++static void pm_committed_all(OSyncObjTypeSink *sink, OSyncPluginInfo *info, OSyncContext *ctx, void *userdata)
+ {	
+-	pm_call_module_method(data, "committed_all", info, ctx, NULL);
++	pm_call_module_method(sink, info, ctx, userdata, "committed_all", NULL);
+ }
+ 
+-static osync_bool pm_write(void *data, OSyncPluginInfo *info, OSyncContext *ctx, OSyncChange *change)
++static void pm_read(OSyncObjTypeSink *sink, OSyncPluginInfo *info, OSyncContext *ctx, OSyncChange *change, void *userdata)
+ {	
+-	return pm_call_module_method(data, "write", info, ctx, change);
++	pm_call_module_method(sink, info, ctx, userdata, "read", change);
+ }
+ 
+-static osync_bool pm_read(void *data, OSyncPluginInfo *info, OSyncContext *ctx, OSyncChange *change)
++static void pm_sync_done(OSyncObjTypeSink *sink, OSyncPluginInfo *info, OSyncContext *ctx, void *userdata)
+ {	
+-	return pm_call_module_method(data, "read", info, ctx, change);
++	pm_call_module_method(sink, info, ctx, userdata, "sync_done", NULL);
+ }
+ 
+-static void pm_sync_done(void *data, OSyncPluginInfo *info, OSyncContext *ctx)
++static void pm_connect_done(OSyncObjTypeSink *sink, OSyncPluginInfo *info, OSyncContext *ctx, osync_bool slow_sync, void *userdata)
+ {
+-	pm_call_module_method(data, "sync_done", info, ctx, NULL);
++	pm_call_module_method(sink, info, ctx, userdata, "sync_done", NULL);
+ }
+ 
+-static OSyncObjTypeSinkFunctions pm_sink_functions = {
+-	.connect = pm_connect,
+-	.disconnect = pm_disconnect,
+-	.get_changes = pm_get_changes,
+-	.commit = pm_commit,
+-	.write = pm_write,
+-	.committed_all = pm_committed_all,
+-	.read = pm_read,
+-	.batch_commit = NULL, /* not (yet) supported for python plugins */
+-	.sync_done = pm_sync_done
+-};
+ 
+ /** Calls the method initialize function
+  *
+@@ -326,6 +319,8 @@
+ 	osync_trace(TRACE_ENTRY, "%s(%p, %p, %p)", __func__, plugin, info, error);
+ 	MemberData *data = g_malloc0(sizeof(MemberData));
+ 	char *modulename;
++	OSyncList *s, *sinks = NULL;
++	OSyncObjTypeSink *sink = NULL;
+ 
+ 	if (!(modulename = osync_plugin_get_data(plugin)))
+ 		return NULL;
+@@ -359,14 +354,22 @@
+ 	Py_DECREF(ret);
+ 
+ 	/* loop through all objtype sinks, set up function pointers */
+-	int n, max = osync_plugin_info_num_objtypes(info);
+-	for (n = 0; n < max; n++) {
+-		OSyncObjTypeSink *sink = osync_plugin_info_nth_objtype(info, n);
+-		PyObject *sinkobj = osync_objtype_sink_get_userdata(sink);
+-		osync_objtype_sink_set_functions(sink, pm_sink_functions, sinkobj);
+-		Py_INCREF(sinkobj);
+-		data->sinks = g_slist_prepend(data->sinks, sinkobj);
++
++	sinks = osync_plugin_info_get_objtype_sinks(info);
++	for (s = sinks; s; s = s->next) {
++		sink = (OSyncObjTypeSink *)s;
++
++		osync_objtype_sink_set_connect_func(sink, pm_connect);
++		osync_objtype_sink_set_disconnect_func(sink, pm_disconnect);
++		osync_objtype_sink_set_get_changes_func(sink, pm_get_changes);
++		osync_objtype_sink_set_commit_func(sink, pm_commit);
++		osync_objtype_sink_set_committed_all_func(sink, pm_committed_all);
++		osync_objtype_sink_set_read_func(sink, pm_read);
++                osync_objtype_sink_set_sync_done_func(sink, pm_sync_done);
++                osync_objtype_sink_set_connect_done_func(sink, pm_connect_done);
++
+ 	}
++	osync_list_free(sinks);
+ 
+ 	PyGILState_Release(pystate);
+ 	osync_trace(TRACE_EXIT, "%s", __func__);
+@@ -381,7 +384,7 @@
+ 	return NULL;
+ }
+ 
+-static osync_bool pm_discover(void *data_in, OSyncPluginInfo *info, OSyncError **error)
++static osync_bool pm_discover(OSyncPluginInfo *info, void *data_in, OSyncError **error)
+ {
+ 	osync_trace(TRACE_ENTRY, "%s(%p, %p, %p)", __func__, data_in, info, error);
+ 
+@@ -481,7 +484,10 @@
+ 	osync_plugin_set_discover(plugin, pm_discover);
+ 	osync_plugin_set_finalize(plugin, pm_finalize);
+ 	osync_plugin_set_data(plugin, g_strdup(modulename));
+-	osync_plugin_env_register_plugin(env, plugin);
++
++	if (!osync_plugin_env_register_plugin(env, plugin, error))
++		return FALSE;
++
+ 	osync_plugin_unref(plugin);
+ 
+ 	osync_trace(TRACE_EXIT, "%s", __func__);
+diff -ur -x .svn -x .git -x .bzr -x CVS -w -x '*.cmake' -x '*.txt' ../BUILD.i686-linux/libopensync-plugin-python-0.36//src/sample.py python-module//src/sample.py
+--- ../BUILD.i686-linux/libopensync-plugin-python-0.36//src/sample.py	2008-01-26 19:03:13.000000000 +0200
++++ python-module//src/sample.py	2010-12-22 11:53:33.671997210 +0200
+@@ -3,7 +3,7 @@
+ class DummySink(opensync.ObjTypeSinkCallbacks):
+ 	def __init__(self, objtype):
+ 		opensync.ObjTypeSinkCallbacks.__init__(self, objtype)
+-		self.sink.add_objformat("file")
++		self.sink.add_objformat(opensync.ObjFormatSink("file"))
+ 
+ 	def connect(self, info, ctx):
+ 		print "Connect called!"
+@@ -23,7 +23,7 @@
+ 	
+ 	def commit(self, info, ctx, chg):
+ 		print "commit called!"
+-		print "Opensync wants me to write data for UID", chg.uid
++		print "Opensync wants me to commit data for UID", chg.uid
+ 	
+ 	def committed_all(self, info, ctx):
+ 		print "committed_all called!"
+@@ -32,10 +32,6 @@
+ 		print "read called!"
+ 		print "OpenSync wants me to read the data for UID", chg.uid
+ 
+-	def write(self, info, ctx, chg):
+-		print "write called!"
+-		print "Opensync wants me to write data for UID", chg.uid
+-	
+ 	def disconnect(self, info, ctx):
+ 		print "disconnect called!"
+ 

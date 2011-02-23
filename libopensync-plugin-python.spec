@@ -1,11 +1,8 @@
-# TODO:
-# - move %{_libdir}/opensync-1.0/python-plugins to %{_datadir} and make
-#   dependant packages noarch
 Summary:	OpenSync Python plugin
 Summary(pl.UTF-8):	Wtyczka Pythona do OpenSync
 Name:		libopensync-plugin-python
 Version:	0.36
-Release:	5
+Release:	6
 License:	LGPL v2.1+
 Group:		Libraries
 Source0:	http://www.opensync.org/download/releases/0.36/%{name}-%{version}.tar.gz
@@ -15,7 +12,7 @@ Patch1:		branch.diff
 URL:		http://www.opensync.org/
 BuildRequires:	cmake
 BuildRequires:	glib2-devel >= 2.0
-BuildRequires:	libopensync-devel >= 1:%{version}
+BuildRequires:	libopensync-devel >= 1:0.39-7
 BuildRequires:	pkgconfig
 BuildRequires:	python-devel
 BuildRequires:	rpmbuild(macros) >= 1.577
@@ -58,7 +55,7 @@ rm -rf $RPM_BUILD_ROOT
 %{__make} -C build install \
 	DESTDIR=$RPM_BUILD_ROOT
 
-%{__rm} $RPM_BUILD_ROOT%{_libdir}/libopensync1/python-plugins/sample.py
+%{__rm} $RPM_BUILD_ROOT%{_datadir}/libopensync1/python-plugins/sample.py
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -67,4 +64,3 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(644,root,root,755)
 %doc AUTHORS src/sample.py
 %attr(755,root,root) %{_libdir}/libopensync1/plugins/python-module.so
-%dir %{_libdir}/libopensync1/python-plugins

@@ -2,7 +2,7 @@ Summary:	OpenSync Python plugin
 Summary(pl.UTF-8):	Wtyczka Pythona do OpenSync
 Name:		libopensync-plugin-python
 Version:	0.36
-Release:	6
+Release:	7
 License:	LGPL v2.1+
 Group:		Libraries
 Source0:	http://www.opensync.org/download/releases/0.36/%{name}-%{version}.tar.gz
@@ -10,13 +10,14 @@ Source0:	http://www.opensync.org/download/releases/0.36/%{name}-%{version}.tar.g
 Patch0:		cmake.patch
 Patch1:		branch.diff
 URL:		http://www.opensync.org/
-BuildRequires:	cmake
+BuildRequires:	cmake >= 2.8
 BuildRequires:	glib2-devel >= 2.0
 BuildRequires:	libopensync-devel >= 1:0.39-7
 BuildRequires:	pkgconfig
-BuildRequires:	python-devel
+BuildRequires:	python-devel >= 2
 BuildRequires:	rpmbuild(macros) >= 1.577
 BuildRequires:	sed >= 4.0
+Requires:	python-opensync >= 1:0.39
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
@@ -42,7 +43,8 @@ Ten pakiet zawiera wtyczkę Pythona dla szkieletu OpenSync.
 %patch0 -p1
 %patch1 -p1
 
-rm cmake/modules/FindPythonLibs.cmake
+# use system version
+%{__rm} cmake/modules/FindPythonLibs.cmake
 
 %build
 install -d build
@@ -64,3 +66,4 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(644,root,root,755)
 %doc AUTHORS src/sample.py
 %attr(755,root,root) %{_libdir}/libopensync1/plugins/python-module.so
+%dir %{_datadir}/libopensync1/python-plugins

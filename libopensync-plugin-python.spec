@@ -2,7 +2,7 @@ Summary:	OpenSync Python plugin
 Summary(pl.UTF-8):	Wtyczka Pythona do OpenSync
 Name:		libopensync-plugin-python
 Version:	0.36
-Release:	9
+Release:	10
 License:	LGPL v2.1+
 Group:		Libraries
 Source0:	http://www.opensync.org/download/releases/0.36/%{name}-%{version}.tar.gz
